@@ -8,8 +8,8 @@ const dayjs = require('dayjs');
 const { Command } = require('commander');
 const program = new Command();
 
-const PKG_PATH = path.resolve(__dirname, './package.json');
-const CHANGELOG_DIR = path.resolve(__dirname, './changelog');
+const PKG_PATH = './package.json';
+const CHANGELOG_DIR = './changelog';
 const pkg = require(PKG_PATH);
 const currentVersion = pkg.version;
 

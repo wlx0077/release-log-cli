@@ -1,10 +1,11 @@
 {
   "name": "release-log-cli",
-  "version": "1.0.1",
+  "version": "v1.0.3",
   "description": "release a semver version and generate changelog.md",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release": "release-log"
   },
   "bin": {
     "release-log": "./release.js"
@@ -16,6 +17,7 @@
     "commander": "^9.4.0",
     "conventional-changelog": "^3.1.25",
     "dayjs": "^1.11.5",
+    "release-log-cli": "^1.0.1",
     "semver": "^7.3.7"
   }
 }

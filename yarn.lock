@@ -846,6 +846,27 @@ redent@^3.0.0:
     indent-string "^4.0.0"
     strip-indent "^3.0.0"
 
+release-log-cli@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/release-log-cli/-/release-log-cli-1.0.1.tgz#e2c963c10229e08860afdef977652d93b4a8f965"
+  integrity sha512-uoQgKLPd3IQCcgurj/AbJTCajE/btOJa1BNSe3MDN5r8ox8B9lHrqcsN5rl+gdKiaHRrz7Lnz2CKBqxjiMiekg==
+  dependencies:
+    commander "^9.4.0"
+    conventional-changelog "^3.1.25"
+    dayjs "^1.11.5"
+    semver "^7.3.7"
+
+release-log-cli@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/release-log-cli/-/release-log-cli-1.0.2.tgz#abdda412b2723d9b190be309373519efe89132fd"
+  integrity sha512-Ge+zSW2TmQFuRECGE14cwcEY7fwMSYi9QwN4fR2DK2m2OmTCR9u9IpkXJFoQTOxSkC1H3Zm98EbsRcs5JdWJdQ==
+  dependencies:
+    commander "^9.4.0"
+    conventional-changelog "^3.1.25"
+    dayjs "^1.11.5"
+    release-log-cli "^1.0.1"
+    semver "^7.3.7"
+
 require-directory@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/require-directory/-/require-directory-2.1.1.tgz#8c64ad5fd30dab1c976e2344ffe7f792a6a6df42"
