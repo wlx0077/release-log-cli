@@ -10,7 +10,7 @@ const program = new Command();
 
 const PKG_PATH = './package.json';
 const CHANGELOG_DIR = './changelog';
-const pkg = require(PKG_PATH);
+const pkg = JSON.parse(fs.readFileSync(PKG_PATH).toString());
 const currentVersion = pkg.version;
 
 program
@@ -19,19 +19,21 @@ program
   .version('1.0.0');
 
 program
-  .argument('<string>', 'a semver string');
+  .argument('<string>', 'a npm version string');
 
 program.parse();
 
 const args = program.args;
 const version = args[0];
 
-if (!semver.valid(version)) {
-  console.log('Invalid version!');
+if (!/^\d+\.\d+\.\d+/.test(version)) {
+  console.log('Invalid npm version!');
+  process.exit(1)
 }
 
 if (semver.lt(version, currentVersion)) {
   console.log('The version must greater than the package version!');
+  process.exit(1)
 }
 
 const logName = `CHANGELOG-${version}-${dayjs().format('YYYY.MM.DD')}.md`;

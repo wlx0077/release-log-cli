@@ -1,16 +1,17 @@
 {
   "name": "release-log-cli",
-  "version": "v1.0.3",
+  "version": "1.0.4",
   "description": "release a semver version and generate changelog.md",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "release": "release-log"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
     "release-log": "./release.js"
   },
-  "keywords": [],
+  "keywords": [
+    "kk"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
