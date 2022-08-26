@@ -1,6 +1,6 @@
 {
   "name": "release-log-cli",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "release a semver version and generate changelog.md",
   "main": "index.js",
   "scripts": {
@@ -9,12 +9,11 @@
   "bin": {
     "release-log": "./release.js"
   },
-  "keywords": [
-    "kk"
-  ],
+  "keywords": ["release", "changelog"],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chalk": "4",
     "commander": "^9.4.0",
     "conventional-changelog": "^3.1.25",
     "dayjs": "^1.11.5",
