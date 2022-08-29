@@ -43,18 +43,19 @@ if (semver.lt(version, currentVersion)) {
 // 获取所有tags
 const tags = childProcess.spawnSync('git', ['tag']).stdout.toString().split('\n')
 
-if (tags.includes(`v${currentVersion}`)) {
-  logSuccess('Start working...');
-} else { // 不存在当前版本的tag，提示更新仓库tag
-  console.log(`Can\'t find a matched git tag for current npm version!\nPlease update your local git repo for newest git tag.`);
+// 不存在当前版本的tag，提示更新仓库tag
+if (!tags.includes(`v${currentVersion}`)) {
+  console.log('Can\'t find a matched git tag for current npm version!');
+  console.log('Please update your local git repo for newest git tag.');
   process.exit(1);
 }
 
 // 如果设置相同的版本号，删除此次tag，构建新的当前版本
 if (semver.eq(version, currentVersion)) {
-  childProcess.spawnSync('git', ['tag', '-d', version])
+  childProcess.spawnSync('git', ['tag', '-d', `v${version}`])
 }
 
+logSuccess('Start working...');
 working()
 
 async function working() {
