@@ -28,40 +28,36 @@ program.parse();
 const args = program.args;
 const version = args[0];
 
+// 检测版本号是否正确
 if (!/^\d+\.\d+\.\d+/.test(version)) {
   console.log('Invalid npm version!');
   process.exit(1);
 }
 
-if (!semver.gt(version, currentVersion)) {
-  console.log('The version must greater than the package version!');
+// 检测版本号是否小于当前版本
+if (semver.lt(version, currentVersion)) {
+  console.log('The version can\'t less than the package version!');
   process.exit(1);
 }
 
-const tagCp = childProcess.spawn('git', ['tag']);
+// 获取所有tags
+const tags = childProcess.spawnSync('git', ['tag']).stdout.toString().split('\n')
 
-let tagsBuffer = [];
-tagCp.stdout.on('data', (d) => {
-  tagsBuffer = tagsBuffer.concat(d);
-});
-
-tagCp.stdout.on('end', () => {
-  const tags = tagsBuffer.toString().split('\n');
-  if (tags.includes(`v${currentVersion}`)) {
-    logSuccess('Start working...');
-    main();
-  } else {
-    console.log(`Can\'t find a matched git tag for current npm version!\nPlease update your local git repo for newest git tag.`);
-    process.exit(1);
-  }
-});
-
-tagCp.stderr.on('data', (d) => {
-  console.log(d.toString());
+if (tags.includes(`v${currentVersion}`)) {
+  logSuccess('Start working...');
+} else { // 不存在当前版本的tag，提示更新仓库tag
+  console.log(`Can\'t find a matched git tag for current npm version!\nPlease update your local git repo for newest git tag.`);
   process.exit(1);
-});
+}
 
-async function main() {
+// 如果设置相同的版本号，删除此次tag，构建新的当前版本
+if (semver.eq(version, currentVersion)) {
+  childProcess.spawnSync('git', ['tag', '-d', version])
+}
+
+working()
+
+async function working() {
   const logName = `CHANGELOG-${version}-${dayjs().format('YYYY.MM.DD')}.md`;
   const logPath = path.join(CHANGELOG_DIR, logName);
 
