@@ -21,11 +21,13 @@ program
   .version(releasePkg.version);
 
 program
-  .argument('<string>', 'A npm version string.');
+  .argument('<string>', 'A npm version string.')
+  .option('-t, --temp', 'Only log changelog.')
 
 program.parse();
 
 const args = program.args;
+const options = program.opts()
 const version = args[0];
 
 // 检测版本号是否正确
@@ -61,6 +63,14 @@ working()
 async function working() {
   const logName = `CHANGELOG-${version}-${dayjs().format('YYYY.MM.DD')}.md`;
   const logPath = path.join(CHANGELOG_DIR, logName);
+
+  if (options.t) {
+    conventionalChangelog({
+      preset: 'angular',
+    })
+      .pipe(process.stdout);
+    return
+  }
 
   // 设置pkg.version
   setVersion();
