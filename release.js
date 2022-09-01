@@ -22,12 +22,12 @@ program
 
 program
   .argument('<string>', 'A npm version string.')
-  .option('-t, --temp', 'Only log changelog.')
+  .option('-t, --temp', 'Only log changelog.');
 
 program.parse();
 
 const args = program.args;
-const options = program.opts()
+const options = program.opts();
 const version = args[0];
 
 // 检测版本号是否正确
@@ -43,7 +43,7 @@ if (semver.lt(version, currentVersion)) {
 }
 
 // 获取所有tags
-const tags = childProcess.spawnSync('git', ['tag']).stdout.toString().split('\n')
+const tags = childProcess.spawnSync('git', ['tag']).stdout.toString().split('\n');
 
 // 不存在当前版本的tag，提示更新仓库tag
 if (!tags.includes(`v${currentVersion}`)) {
@@ -54,23 +54,26 @@ if (!tags.includes(`v${currentVersion}`)) {
 
 // 如果设置相同的版本号，删除此次tag，构建新的当前版本
 if (semver.eq(version, currentVersion)) {
-  childProcess.spawnSync('git', ['tag', '-d', `v${version}`])
+  childProcess.spawnSync('git', ['tag', '-d', `v${version}`]);
 }
 
-logSuccess('Start working...');
-working()
+if (options.temp) {
+  setNpmVersion(version);
+  const s = conventionalChangelog({
+    preset: 'angular',
+  })
+  s.pipe(process.stdout)
+  s.on('close', () => {
+    setNpmVersion(currentVersion)
+  })
+} else {
+  logSuccess('Start working...');
+  working();
+}
 
 async function working() {
   const logName = `CHANGELOG-${version}-${dayjs().format('YYYY.MM.DD')}.md`;
   const logPath = path.join(CHANGELOG_DIR, logName);
-
-  if (options.t) {
-    conventionalChangelog({
-      preset: 'angular',
-    })
-      .pipe(process.stdout);
-    return
-  }
 
   // 设置pkg.version
   setVersion();
@@ -84,8 +87,7 @@ async function working() {
   logSuccess('Done!');
 
   function setVersion() {
-    pkg.version = version;
-    fs.writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2));
+    setNpmVersion(version);
     logSuccess(`Set npm version (${version})`);
   }
 
@@ -121,6 +123,11 @@ async function working() {
     childProcess.spawnSync('git', ['tag', `v${version}`]);
     logSuccess(`Set git tag (v${version})`);
   }
+}
+
+function setNpmVersion(version) {
+  pkg.version = version;
+  fs.writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2));
 }
 
 function logSuccess(msg) {
