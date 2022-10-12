@@ -13,7 +13,7 @@
     "release",
     "changelog"
   ],
-  "author": "",
+  "author": "wanglingxu0077@163.com",
   "license": "ISC",
   "dependencies": {
     "chalk": "4",

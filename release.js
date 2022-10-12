@@ -52,11 +52,6 @@ if (!tags.includes(`v${currentVersion}`)) {
   process.exit(1);
 }
 
-// 如果设置相同的版本号，删除此次tag，构建新的当前版本
-if (semver.eq(version, currentVersion)) {
-  childProcess.spawnSync('git', ['tag', '-d', `v${version}`]);
-}
-
 if (options.temp) {
   setNpmVersion(version);
   const s = conventionalChangelog({
@@ -67,6 +62,10 @@ if (options.temp) {
     setNpmVersion(currentVersion)
   })
 } else {
+  // 如果设置相同的版本号，删除此次tag，构建新的当前版本
+  if (semver.eq(version, currentVersion)) {
+    childProcess.spawnSync('git', ['tag', '-d', `v${version}`]);
+  }
   logSuccess('Start working...');
   working();
 }
