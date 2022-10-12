@@ -1,6 +1,6 @@
 {
   "name": "release-log-cli",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Release a semver version and generate changelog.md",
   "main": "index.js",
   "scripts": {
