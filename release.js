@@ -22,106 +22,109 @@ program
 
 program
   .argument('<string>', 'A npm version string.')
-  .option('-t, --temp', 'Only log changelog.');
+  .option('-t, --temp', 'Only print changelog.')
+  .action(releaseAction);
+
+program.command('sync')
+  .description('Sync git tag with npm version.')
+  .action(syncAction);
 
 program.parse();
 
-const args = program.args;
-const options = program.opts();
-const version = args[0];
+async function releaseAction(version, options) {
+  // 检测版本号是否正确
+  if (!/^\d+\.\d+\.\d+/.test(version)) {
+    console.log('Invalid npm version!');
+    return
+  }
 
-// 检测版本号是否正确
-if (!/^\d+\.\d+\.\d+/.test(version)) {
-  console.log('Invalid npm version!');
-  process.exit(1);
-}
+  // 检测版本号是否小于当前版本
+  if (semver.lt(version, currentVersion)) {
+    console.log('The version can\'t less than the package version!');
+    return
+  }
 
-// 检测版本号是否小于当前版本
-if (semver.lt(version, currentVersion)) {
-  console.log('The version can\'t less than the package version!');
-  process.exit(1);
-}
+  // 获取所有tags
+  const tags = childProcess.spawnSync('git', ['tag']).stdout.toString().split('\n');
 
-// 获取所有tags
-const tags = childProcess.spawnSync('git', ['tag']).stdout.toString().split('\n');
+  // 不存在当前版本的tag，提示更新仓库tag，或者使用sync命令同步npmVersion到git-tag
+  if (!tags.includes(`v${currentVersion}`)) {
+    console.log('Can\'t find a matched git tag for current npm version!');
+    console.log(`Please update your local git repo for newest git tag, or you can use "release-log sync" set git tag to current npm version`);
+    return
+  }
 
-// 不存在当前版本的tag，提示更新仓库tag
-if (!tags.includes(`v${currentVersion}`)) {
-  console.log('Can\'t find a matched git tag for current npm version!');
-  console.log('Please update your local git repo for newest git tag.');
-  process.exit(1);
-}
-
-if (options.temp) {
-  setNpmVersion(version);
-  const s = conventionalChangelog({
-    preset: 'angular',
-  })
-  s.pipe(process.stdout)
-  s.on('close', () => {
-    setNpmVersion(currentVersion)
-  })
-} else {
+  // 如果是临时预览
+  if (options.temp) {
+    setNpmVersion(version);
+    const s = getChangelogStream()
+    s.pipe(process.stdout);
+    s.on('close', () => {
+      setNpmVersion(currentVersion);
+    });
+    return
+  }
   // 如果设置相同的版本号，删除此次tag，构建新的当前版本
   if (semver.eq(version, currentVersion)) {
     childProcess.spawnSync('git', ['tag', '-d', `v${version}`]);
   }
-  logSuccess('Start working...');
-  working();
-}
 
-async function working() {
+  logSuccess('Start working...');
+
   const logName = `CHANGELOG-${version}-${dayjs().format('YYYY.MM.DD')}.md`;
   const logPath = path.join(CHANGELOG_DIR, logName);
 
   // 设置pkg.version
-  setVersion();
+  setNpmVersion(version);
+  logSuccess(`Set npm version (${version})`);
 
   // 生成版本日志
-  await genChangelog();
+  await genChangelog(logPath, logName);
 
   // 增加git-tag
-  setTag();
+  setGitTag(version);
+  logSuccess(`Set git tag (v${version})`);
 
   logSuccess('Done!');
+}
 
-  function setVersion() {
-    setNpmVersion(version);
-    logSuccess(`Set npm version (${version})`);
-  }
+function syncAction () {
+  setGitTag(currentVersion)
+  logSuccess(`Set git tag (v${currentVersion})`);
+}
 
-  function genChangelog() {
-    return new Promise((resolve) => {
-      if (!fs.existsSync(CHANGELOG_DIR)) {
-        fs.mkdirSync(CHANGELOG_DIR);
-      }
-      const logWs = fs.createWriteStream(logPath);
+function getChangelogStream(config) {
+  return conventionalChangelog({
+    preset: 'angular',
+    ...config
+  })
+}
 
-      conventionalChangelog({
-        preset: 'angular',
-      })
-        .pipe(logWs);
+function genChangelog(logPath, logName) {
+  return new Promise((resolve) => {
+    if (!fs.existsSync(CHANGELOG_DIR)) {
+      fs.mkdirSync(CHANGELOG_DIR);
+    }
+    const logWs = fs.createWriteStream(logPath);
 
-      logWs.on('close', () => {
-        logSuccess(`Generate changelog (${logPath})`);
-        childProcess.spawnSync('git', ['add', logPath]);
-        logSuccess(`Git add ${logName}`);
-        resolve();
-      });
-      logWs.on('error', () => {
-        childProcess.spawnSync('rm', [logPath]);
-        logFailed('Generate changelog');
-        process.exit(1);
-      });
+    getChangelogStream().pipe(logWs);
 
+    logWs.on('close', () => {
+      logSuccess(`Generate changelog (${logPath})`);
+      childProcess.spawnSync('git', ['add', logPath]);
+      logSuccess(`Git add ${logName}`);
+      resolve();
     });
+    logWs.on('error', () => {
+      childProcess.spawnSync('rm', [logPath]);
+      logFailed('Generate changelog');
+      process.exit(1);
+    });
+  });
+}
 
-  }
-
-  function setTag() {
-    childProcess.spawnSync('git', ['tag', `v${version}`]);
-    logSuccess(`Set git tag (v${version})`);
-  }
+function setGitTag(version) {
+  childProcess.spawnSync('git', ['tag', `v${version}`]);
 }
 
 function setNpmVersion(version) {

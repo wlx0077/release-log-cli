@@ -24,8 +24,18 @@ yarn add -D release-log-cli
 
 ## 使用
 
-初始化git后使用
-
 ```text
-release-log 1.1.1
+1. 初始化git并初次提交后，首先将git-tag同步npm version
+release-log sync
+
+2. 修改文件，使用angular提交规范提交
+git commit -am 'feat: test'
+
+3. 发布版本并生成日志
+release-log 1.0.1
+
+4. 完成后将自动生成changelog目录，并且增加对应的git-tag
+
+5. 如果一个版本有新的提交，可再次使用release-log 1.0.1，此时将生成新的日志，并且覆盖原有版本日志
+
 ```
